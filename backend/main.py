@@ -2,11 +2,21 @@ from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from backend import models, schemas, database
 from .hashing import Hash
+from fastapi.middleware.cors import CORSMiddleware
 
 # This line creates the tables in MySQL automatically
 models.Base.metadata.create_all(bind=database.engine)
 
 app = FastAPI()
+
+# This allows your Frontend (port 5173) to talk to your Backend (port 8000)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"], # In production, you'd replace "*" with your actual URL
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Dependency to get a DB session
 def get_db():
