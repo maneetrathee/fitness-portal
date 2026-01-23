@@ -74,3 +74,17 @@ def login(request: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(
     access_token = create_access_token(data={"sub": user.username})
     
     return {"access_token": access_token, "token_type": "bearer"}
+
+@app.post("/workouts/", response_model=schemas.WorkoutResponse)
+def create_workout(workout: schemas.WorkoutCreate, db: Session = Depends(get_db)):
+    # For now, we'll hardcode user_id=1. 
+    # Later, we will extract the ID from your Token!
+    new_workout = models.Workout(
+        exercise_type=workout.exercise_type,
+        duration_minutes=workout.duration_minutes,
+        user_id=1 
+    )
+    db.add(new_workout)
+    db.commit()
+    db.refresh(new_workout)
+    return new_workout

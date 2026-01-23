@@ -14,3 +14,16 @@ class UserResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class WorkoutCreate(BaseModel):
+    exercise_type: str
+    duration_minutes: int
+
+class WorkoutResponse(BaseModel):
+    id: int
+    exercise_type: str
+    duration_minutes: int
+    user_id: int
+
+    class Config:
+        from_attributes = True

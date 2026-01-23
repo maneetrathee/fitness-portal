@@ -5,6 +5,23 @@ import axios from "axios";
 function App() {
   const [token, setToken] = useState(localStorage.getItem("token"));
   const [users, setUsers] = useState([]);
+  const [exercise, setExercise] = useState("");
+  const [duration, setDuration] = useState("");
+
+  const handleAddWorkout = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.post("http://127.0.0.1:8000/workouts/", {
+        exercise_type: exercise,
+        duration_minutes: parseInt(duration),
+      });
+      alert("Workout Logged!");
+      setExercise("");
+      setDuration("");
+    } catch (error) {
+      console.error("Error logging workout", error);
+    }
+  };
 
   const fetchUsers = async () => {
     try {
@@ -42,6 +59,30 @@ function App() {
         </button>
       </div>
       <hr />
+      <div
+        style={{
+          backgroundColor: "#f4f4f4",
+          padding: "20px",
+          borderRadius: "8px",
+          marginBottom: "20px",
+        }}
+      >
+        <h3>Log New Workout</h3>
+        <form onSubmit={handleAddWorkout}>
+          <input
+            placeholder="Exercise (e.g. Running)"
+            value={exercise}
+            onChange={(e) => setExercise(e.target.value)}
+          />
+          <input
+            placeholder="Minutes"
+            type="number"
+            value={duration}
+            onChange={(e) => setDuration(e.target.value)}
+          />
+          <button type="submit">Add Workout</button>
+        </form>
+      </div>
       <ul>
         {users.map((user) => (
           <li key={user.id}>
