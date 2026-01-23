@@ -53,3 +53,24 @@ from typing import List
 def get_users(db: Session = Depends(get_db)):
     users = db.query(models.User).all()
     return users
+
+from fastapi.security import OAuth2PasswordRequestForm
+from .hashing import Hash
+from .auth import create_access_token
+
+@app.post("/login")
+def login(request: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    # 1. Find user by username
+    user = db.query(models.User).filter(models.User.username == request.username).first()
+    
+    if not user:
+        raise HTTPException(status_code=404, detail="Invalid Credentials")
+    
+    # 2. Check if password is correct
+    if not Hash.verify(request.password, user.hashed_password):
+        raise HTTPException(status_code=404, detail="Incorrect password")
+    
+    # 3. Generate Token
+    access_token = create_access_token(data={"sub": user.username})
+    
+    return {"access_token": access_token, "token_type": "bearer"}
