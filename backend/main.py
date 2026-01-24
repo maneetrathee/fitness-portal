@@ -3,6 +3,8 @@ from sqlalchemy.orm import Session
 from backend import models, schemas, database
 from .hashing import Hash
 from fastapi.middleware.cors import CORSMiddleware
+from .auth import get_current_user
+from .database import engine, SessionLocal, get_db
 
 # This line creates the tables in MySQL automatically
 models.Base.metadata.create_all(bind=database.engine)
@@ -17,14 +19,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Dependency to get a DB session
-def get_db():
-    db = database.SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 @app.get("/")
 def read_root():
@@ -76,13 +70,15 @@ def login(request: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(
     return {"access_token": access_token, "token_type": "bearer"}
 
 @app.post("/workouts/", response_model=schemas.WorkoutResponse)
-def create_workout(workout: schemas.WorkoutCreate, db: Session = Depends(get_db)):
-    # For now, we'll hardcode user_id=1. 
-    # Later, we will extract the ID from your Token!
+def create_workout(
+    workout: schemas.WorkoutCreate, 
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user) # The Gatekeeper is now active!
+):
     new_workout = models.Workout(
         exercise_type=workout.exercise_type,
         duration_minutes=workout.duration_minutes,
-        user_id=1 
+        user_id=current_user.id # Use the ID from the token!
     )
     db.add(new_workout)
     db.commit()

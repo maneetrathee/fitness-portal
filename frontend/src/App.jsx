@@ -11,15 +11,25 @@ function App() {
   const handleAddWorkout = async (e) => {
     e.preventDefault();
     try {
-      await axios.post("http://127.0.0.1:8000/workouts/", {
-        exercise_type: exercise,
-        duration_minutes: parseInt(duration),
-      });
+      // We add 'Headers' to the request to carry our Token
+      await axios.post(
+        "http://127.0.0.1:8000/workouts/",
+        {
+          exercise_type: exercise,
+          duration_minutes: parseInt(duration),
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, // This sends the VIP pass
+          },
+        },
+      );
       alert("Workout Logged!");
       setExercise("");
       setDuration("");
     } catch (error) {
       console.error("Error logging workout", error);
+      alert("Failed to log workout. Please login again.");
     }
   };
 
