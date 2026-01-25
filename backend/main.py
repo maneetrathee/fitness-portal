@@ -92,3 +92,16 @@ def get_my_workouts(
 ):
     # This query says: "Find workouts where the user_id is the ID of the logged-in person"
     return db.query(models.Workout).filter(models.Workout.user_id == current_user.id).all()
+
+@app.delete("/workouts/{workout_id}")
+def delete_workout(
+    workout_id: int, 
+    db: Session = Depends(get_db), 
+    current_user: models.User = Depends(get_current_user)
+):
+    workout = db.query(models.Workout).filter(models.Workout.id == workout_id, models.Workout.user_id == current_user.id).first()
+    if not workout:
+        raise HTTPException(status_code=404, detail="Workout not found")
+    db.delete(workout)
+    db.commit()
+    return {"message": "Successfully deleted"}
