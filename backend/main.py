@@ -84,3 +84,11 @@ def create_workout(
     db.commit()
     db.refresh(new_workout)
     return new_workout
+
+@app.get("/workouts/me", response_model=List[schemas.WorkoutResponse])
+def get_my_workouts(
+    db: Session = Depends(get_db), 
+    current_user: models.User = Depends(get_current_user)
+):
+    # This query says: "Find workouts where the user_id is the ID of the logged-in person"
+    return db.query(models.Workout).filter(models.Workout.user_id == current_user.id).all()
