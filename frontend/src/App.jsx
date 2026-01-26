@@ -1,6 +1,14 @@
 import { useState, useEffect } from "react";
 import Login from "./login";
 import axios from "axios";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  Tooltip,
+  Legend,
+} from "recharts";
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem("token"));
@@ -81,6 +89,20 @@ function App() {
       }
     }
   };
+
+  // This groups your workouts by type so the chart can read them
+  const chartData = myWorkouts.reduce((acc, current) => {
+    const existing = acc.find((item) => item.name === current.exercise_type);
+    if (existing) {
+      existing.value += current.duration_minutes;
+    } else {
+      acc.push({
+        name: current.exercise_type,
+        value: current.duration_minutes,
+      });
+    }
+    return acc;
+  }, []);
 
   if (!token) {
     return <Login setToken={setToken} />;
@@ -217,6 +239,52 @@ function App() {
           </button>
         </form>
       </div>
+
+      {/* WORKOUT DISTRIBUTION CHART */}
+      {myWorkouts.length > 0 && (
+        <div
+          style={{
+            backgroundColor: "white",
+            padding: "20px",
+            borderRadius: "15px",
+            marginBottom: "30px",
+            border: "1px solid #f2f2f2",
+            height: "350px",
+            width: "100%", // Ensure a defined width
+          }}
+        >
+          <h3 style={{ color: "#5d6d7e", marginTop: 0 }}>
+            Activity Distribution (mins)
+          </h3>
+          <ResponsiveContainer width="99%" height="90%">
+            {/* Changing to 99% often prevents the calculation loop error */}
+            <PieChart>
+              <Pie
+                data={chartData}
+                cx="50%"
+                cy="50%"
+                innerRadius={60}
+                outerRadius={80}
+                paddingAngle={5}
+                dataKey="value"
+              >
+                {chartData.map((entry, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={
+                      ["#93d790", "#8098b9", "#beb085", "#daaaa7", "#a78cb5"][
+                        index % 5
+                      ]
+                    }
+                  />
+                ))}
+              </Pie>
+              <Tooltip />
+              <Legend />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+      )}
 
       {/* 2. WORKOUT HISTORY  */}
       <div style={{ marginBottom: "40px" }}>
